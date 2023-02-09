@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient {
+
   constructor(config: ConfigService) {
     super({
       datasources: {
@@ -16,7 +17,7 @@ export class PrismaService extends PrismaClient {
 
   cleanDb() {
     return this.$transaction([
-      this.bookmark.deleteMany(),
+      this.department.deleteMany(),
       this.user.deleteMany(),
     ]);
   }
