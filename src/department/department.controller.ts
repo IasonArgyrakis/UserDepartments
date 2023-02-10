@@ -20,13 +20,11 @@ import {
 } from './dto';
 
 //@UseGuards(JwtGuard)
-@Controller('department')
+@Controller('departments')
 export class DepartmentController {
   constructor(
     private departmentService: DepartmentService,
-  ) {
-
-  }
+  ) {}
 
   @Get()
   findAll() {
@@ -43,41 +41,59 @@ export class DepartmentController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
+  findOne(
+    @Param('id', ParseIntPipe)
+    departmentId: number,
+  ) {
     return this.departmentService.getDepartmentById(
-      id,
+      departmentId,
     );
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe)
+    id: number,
     @Body()
     updateDepartmentDto: UpdateDepartmentDto,
   ) {
     return this.departmentService.editDepartmentById(
-      +id,
+      id,
       updateDepartmentDto,
     );
   }
 
-  @Patch(':departmentId/add/:userId')
+  @Patch(':id/add/:userId')
   addUser(
-    @Param('departmentId') departmentId: string,
-    @Param('userId') userId: string,
-    @Body()
-    updateDepartmentDto: UpdateDepartmentDto,
+    @Param('id', ParseIntPipe)
+    id: number,
+    @Param('userId', ParseIntPipe) userId: number,
   ) {
     return this.departmentService.addUserToDepartment(
-      +departmentId,
-      +userId,
+      id,
+      userId,
+    );
+  }
+
+  @Patch(':id/remove/:userId')
+  removeUser(
+    @Param('id', ParseIntPipe)
+    id: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.departmentService.removeUserFromDepartment(
+      id,
+      userId,
     );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id', ParseIntPipe)
+    departmentId: number,
+  ) {
     return this.departmentService.deleteDepartmentById(
-      +id,
+      departmentId,
     );
   }
 }

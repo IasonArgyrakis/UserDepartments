@@ -13,3 +13,17 @@ export class AuthDto {
   @IsNotEmpty()
   password: string;
 }
+
+export class RegisterAuthDto extends AuthDto{
+  @IsString()
+  @IsNotEmpty()
+  firs: string;
+
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+
+}

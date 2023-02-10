@@ -43,6 +43,20 @@ export class DepartmentService {
     });
   }
 
+  async removeUserFromDepartment(
+    departmentId: number,
+    userId: number,
+  ) {
+    return this.prisma.department.update({
+      where: {
+        id: departmentId,
+      },
+      data: {
+        users: { connect: { id: userId } },
+      },
+    });
+  }
+
   async editDepartmentById(
     departmentId: number,
     dto: UpdateDepartmentDto,

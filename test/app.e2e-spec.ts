@@ -45,7 +45,7 @@ describe('App e2e', () => {
 
   describe('Auth', () => {
     const dto: AuthDto = {
-      email: 'vlad@gmail.com',
+      email: 'jason@gmail.com',
       password: '123',
     };
     describe('Signup', () => {
@@ -127,6 +127,7 @@ describe('App e2e', () => {
           .withHeaders({
             Authorization: 'Bearer $S{userAt}',
           })
+          .stores('currentUser', '')
           .expectStatus(200);
       });
     });
@@ -134,8 +135,8 @@ describe('App e2e', () => {
     describe('Edit user', () => {
       it('should edit user', () => {
         const dto: EditUserDto = {
-          firstName: 'Vladimir',
-          email: 'vlad@codewithvlad.com',
+          firstName: 'Jason',
+          email: 'jason@gmail.com',
         };
         return pactum
           .spec()
@@ -152,8 +153,8 @@ describe('App e2e', () => {
   });
 
   describe('Departments', () => {
-    describe('Get empty bookmarks', () => {
-      it('should get bookmarks', () => {
+    describe('Get empty departments', () => {
+      it('should get departments', () => {
         return pactum
           .spec()
           .get('/departments')
@@ -163,6 +164,65 @@ describe('App e2e', () => {
           .expectStatus(200)
           .expectBody([]);
       });
+    });
+  });
+
+  describe('Create Department', () => {
+    const dto: CreateDepartmentDto = {
+      title: 'Accounting',
+    };
+    it('should create department', () => {
+      return pactum
+        .spec()
+        .post('/departments')
+        .withHeaders({
+          Authorization: 'Bearer $S{userAt}',
+        })
+        .withBody(dto)
+        .expectStatus(201)
+        .stores('department', '');
+    });
+  });
+
+  describe('Edit department by id', () => {
+    it('should edit department by id', () => {
+      const dto: UpdateDepartmentDto = {
+        title: 'Accounting & Logistics',
+      };
+      return pactum
+        .spec()
+        .patch('/departments/{id}')
+        .withPathParams('id', '$S{department.id}')
+        .withHeaders({
+          Authorization: 'Bearer $S{userAt}',
+        })
+        .withBody(dto)
+        .expectStatus(200)
+        .expectBodyContains('$S{department.id}')
+        .inspect();
+    });
+  });
+
+  describe('Add user to department ', () => {
+    it('should add user to department', () => {
+      const dto: UpdateDepartmentDto = {
+        title: 'Accounting & Logistics',
+      };
+      return pactum
+        .spec()
+        .patch('/departments/{id}/add/{userId}')
+        .withPathParams('id', '$S{department.id}')
+        .withPathParams(
+          'userId',
+          '$S{currentUser.id}',
+        )
+        .withHeaders({
+          Authorization: 'Bearer $S{userAt}',
+        })
+        .withBody(dto)
+        .expectStatus(200)
+        .expectBodyContains('$S{department.id}')
+        .inspect();
     });
   });
 

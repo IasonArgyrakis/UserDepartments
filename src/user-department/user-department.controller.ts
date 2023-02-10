@@ -1,15 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { UserDepartmentService } from './user-department.service';
 import { CreateUserDepartmentDto } from './dto/create-user-department.dto';
 import { UpdateUserDepartmentDto } from './dto/update-user-department.dto';
 
 @Controller('user-department')
 export class UserDepartmentController {
-  constructor(private readonly userDepartmentService: UserDepartmentService) {}
+  constructor(
+    private readonly userDepartmentService: UserDepartmentService,
+  ) {}
 
   @Post()
-  create(@Body() createUserDepartmentDto: CreateUserDepartmentDto) {
-    return this.userDepartmentService.create(createUserDepartmentDto);
+  create(
+    @Body()
+    createUserDepartmentDto: CreateUserDepartmentDto,
+  ) {
+    return this.userDepartmentService.create(
+      createUserDepartmentDto,
+    );
   }
 
   @Get()
@@ -19,12 +34,21 @@ export class UserDepartmentController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userDepartmentService.findOne(+id);
+    return this.userDepartmentService.findOne(
+      +id,
+    );
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDepartmentDto: UpdateUserDepartmentDto) {
-    return this.userDepartmentService.update(+id, updateUserDepartmentDto);
+  update(
+    @Param('id') id: string,
+    @Body()
+    updateUserDepartmentDto: UpdateUserDepartmentDto,
+  ) {
+    return this.userDepartmentService.update(
+      +id,
+      updateUserDepartmentDto,
+    );
   }
 
   @Delete(':id')

@@ -4,7 +4,4 @@ import { IsInt } from 'class-validator';
 
 export class UpdateDepartmentDto extends PartialType(
   CreateDepartmentDto,
-) {
-  @IsInt()
-  id: number;
-}
+) {}

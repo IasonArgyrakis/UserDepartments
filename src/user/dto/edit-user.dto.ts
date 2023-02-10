@@ -1,5 +1,5 @@
 import {
-  IsEmail,
+  IsEmail, IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -10,10 +10,10 @@ export class EditUserDto {
   email?: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   firstName?: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   lastName?: string;
 }
