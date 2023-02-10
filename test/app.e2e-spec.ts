@@ -330,7 +330,6 @@ describe('App e2e', () => {
           .stores('department_1', '');
       });
     });
-
     describe('Add To Department', () => {
       it('should add user to department', () => {
         return pactum
@@ -366,6 +365,20 @@ describe('App e2e', () => {
           )
           .withPathParams('id', 1)
           .withPathParams('userId', 1)
+          .withHeaders({
+            Authorization:
+              'Bearer $S{user_1_signin.access_token}',
+          })
+          .expectStatus(200);
+      });
+    });
+
+    describe('Delete Department', () => {
+      it('should delete the department', () => {
+        return pactum
+          .spec()
+          .delete('/departments/{id}')
+          .withPathParams('id', 1)
           .withHeaders({
             Authorization:
               'Bearer $S{user_1_signin.access_token}',
