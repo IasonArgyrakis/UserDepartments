@@ -181,6 +181,7 @@ export class DepartmentService {
     departmentId: number,
   ) {
     try {
+      //find delete department
       const department =
         await this.prisma.department.delete({
           where: {
