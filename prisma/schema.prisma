@@ -47,4 +47,6 @@ model UserDepartment {
   department   Department? @relation(fields: [departmentId], references: [id])
   userId       Int?
   departmentId Int?
+
+  users Users[]
 }

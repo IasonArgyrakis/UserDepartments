@@ -27,23 +27,55 @@ export class DepartmentService {
         id: id,
       },
       include: {
+        users: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                afm: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+  async getDepartmentBById(id: number) {
+    return this.prisma.department.findFirst({
+      where: {
+        id: id,
+      },
+      select: {
         users: true,
       },
     });
   }
 
   async getDepartmentByIdWithUsers(id: number) {
-    const dep = await this.getDepartmentById(id);
-    const user_ids = dep.users.map(
-      this.makeUserIdQuery,
-    );
-    return dep;
+    return this.serilizeDepratment(id);
   }
 
-  makeUserIdQuery(relation) {
-    const new_relation = { id: '' };
-    new_relation.id = relation.userId;
-    return new_relation;
+  async serilizeDepratment(id) {
+    const department =
+      await this.getDepartmentById(id);
+    const user_ids: Array<number> =
+      department.users.map(this.makeUserIdArray);
+    const department_users =
+      await this.prisma.user.findMany({
+        where: {
+          id: { in: user_ids },
+        },
+      });
+    return {
+      ...department,
+      users: department_users,
+    };
+  }
+
+  makeUserIdArray(relation) {
+    return relation.userId;
   }
 
   async addUserToDepartment(

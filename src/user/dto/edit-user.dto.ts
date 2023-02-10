@@ -16,4 +16,5 @@ export class EditUserDto {
   @IsString()
   @IsNotEmpty()
   lastName?: string;
+
 }

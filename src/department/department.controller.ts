@@ -45,7 +45,7 @@ export class DepartmentController {
     @Param('id', ParseIntPipe)
     departmentId: number,
   ) {
-    return this.departmentService.getDepartmentByIdWithUsers(
+    return this.departmentService.getDepartmentById(
       departmentId,
     );
   }
