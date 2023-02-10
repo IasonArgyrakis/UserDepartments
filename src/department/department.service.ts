@@ -4,6 +4,7 @@ import {
   CreateDepartmentDto,
   UpdateDepartmentDto,
 } from './dto';
+import { serializeUser } from 'passport';
 
 @Injectable()
 export class DepartmentService {
@@ -42,40 +43,24 @@ export class DepartmentService {
       },
     });
   }
-  async getDepartmentBById(id: number) {
-    return this.prisma.department.findFirst({
-      where: {
-        id: id,
-      },
-      select: {
-        users: true,
-      },
-    });
-  }
 
   async getDepartmentByIdWithUsers(id: number) {
-    return this.serilizeDepratment(id);
+    return this.serializeDepartment(id);
   }
 
-  async serilizeDepratment(id) {
+  async serializeDepartment(id) {
     const department =
       await this.getDepartmentById(id);
-    const user_ids: Array<number> =
-      department.users.map(this.makeUserIdArray);
-    const department_users =
-      await this.prisma.user.findMany({
-        where: {
-          id: { in: user_ids },
-        },
-      });
     return {
       ...department,
-      users: department_users,
+      users: department.users.map(
+        this.serializeUser,
+      ),
     };
   }
 
-  makeUserIdArray(relation) {
-    return relation.userId;
+  serializeUser(user) {
+    return user.user;
   }
 
   async addUserToDepartment(
