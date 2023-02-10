@@ -22,6 +22,11 @@ export class UserController {
     return user;
   }
 
+  @Get()
+  findAll() {
+    return this.userService.getUsers();
+  }
+
   @Get(':id')
   findUser(
     @Param('id', ParseIntPipe)

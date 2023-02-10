@@ -15,6 +15,31 @@ import {
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
+  getUsers() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        afm: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+
+        departments: {
+          select: {
+            department: {
+              select: { title: true },
+            },
+          },
+        },
+      },
+      // @todo Paginate
+      // skip: 4,
+      // take: 2,
+    });
+  }
+
   async editUser(
     userId: number,
     dto: EditUserDto,

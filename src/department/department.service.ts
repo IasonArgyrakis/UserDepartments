@@ -63,6 +63,9 @@ export class DepartmentService {
             },
             _count: true,
           },
+          // @todo Paginate
+          // skip: 4,
+          // take: 2,
         });
       return department;
     } catch (e) {
