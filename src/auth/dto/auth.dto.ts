@@ -14,16 +14,15 @@ export class AuthDto {
   password: string;
 }
 
-export class RegisterAuthDto extends AuthDto{
+export class RegisterAuthDto extends AuthDto {
   @IsString()
   @IsNotEmpty()
-  firs: string;
+  firstName: string;
 
   @IsString()
   @IsNotEmpty()
-  email: string;
+  lastName: string;
   @IsString()
   @IsNotEmpty()
-  email: string;
-
+  afm: string;
 }

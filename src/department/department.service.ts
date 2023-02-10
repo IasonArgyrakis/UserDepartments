@@ -26,19 +26,34 @@ export class DepartmentService {
       where: {
         id: id,
       },
+      include: {
+        users: true,
+      },
     });
+  }
+
+  async getDepartmentByIdWithUsers(id: number) {
+    const dep = await this.getDepartmentById(id);
+    const user_ids = dep.users.map(
+      this.makeUserIdQuery,
+    );
+    return dep;
+  }
+
+  makeUserIdQuery(relation) {
+    const new_relation = { id: '' };
+    new_relation.id = relation.userId;
+    return new_relation;
   }
 
   async addUserToDepartment(
     departmentId: number,
     userId: number,
   ) {
-    return this.prisma.department.update({
-      where: {
-        id: departmentId,
-      },
+    return this.prisma.userDepartment.create({
       data: {
-        users: { connect: { id: userId } },
+        userId: userId,
+        departmentId: departmentId,
       },
     });
   }
