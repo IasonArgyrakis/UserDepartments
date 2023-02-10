@@ -18,12 +18,14 @@ model User {
 
   firstName String?
   lastName  String?
-  afm       String?
+  afm       String? @unique
 
   departments UserDepartment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([email, afm])
 
   @@map("users")
 }
@@ -31,7 +33,7 @@ model User {
 model Department {
   id Int @id @default(autoincrement())
 
-  title String
+  title String @unique
 
   users UserDepartment[]
 
@@ -42,11 +44,11 @@ model Department {
 }
 
 model UserDepartment {
-  id           Int         @id @default(autoincrement())
-  user         User?       @relation(fields: [userId], references: [id])
-  department   Department? @relation(fields: [departmentId], references: [id])
-  userId       Int?
-  departmentId Int?
+  user         User       @relation(fields: [userId], references: [id])
+  department   Department @relation(fields: [departmentId], references: [id])
+  userId       Int
+  departmentId Int
 
-  users Users[]
+  @@id([userId, departmentId])
+  @@unique([userId, departmentId])
 }

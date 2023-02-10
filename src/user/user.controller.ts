@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Patch,
   UseGuards,
 } from '@nestjs/common';
@@ -20,9 +22,18 @@ export class UserController {
     return user;
   }
 
-  @Patch()
+  @Get(':id')
+  findUser(
+    @Param('id', ParseIntPipe)
+    userId: number,
+  ) {
+    return this.userService.findUser(userId);
+  }
+
+  @Patch(':id')
   editUser(
-    @GetUser('id') userId: number,
+    @Param('id', ParseIntPipe)
+    userId: number,
     @Body() dto: EditUserDto,
   ) {
     return this.userService.editUser(userId, dto);

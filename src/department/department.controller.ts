@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { GetUser } from '../auth/decorator';
@@ -50,7 +51,7 @@ export class DepartmentController {
     );
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id', ParseIntPipe)
     id: number,
@@ -63,7 +64,7 @@ export class DepartmentController {
     );
   }
 
-  @Patch(':id/add/:userId')
+  @Put(':id/user/:userId')
   addUser(
     @Param('id', ParseIntPipe)
     id: number,
@@ -75,7 +76,7 @@ export class DepartmentController {
     );
   }
 
-  @Patch(':id/remove/:userId')
+  @Delete(':id/user/:userId')
   removeUser(
     @Param('id', ParseIntPipe)
     id: number,
