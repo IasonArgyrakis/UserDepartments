@@ -4,16 +4,18 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { EditUserDto } from './dto';
+import { UserDto } from './dto';
 import { Prisma } from '@prisma/client';
-import {
-  CreateDepartmentDto,
-  UpdateDepartmentDto,
-} from '../department/dto';
+import { CreateDepartmentDto } from '../department/dto';
+import { RegisterAuthDto } from '../auth/dto';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private authService: AuthService,
+  ) {}
 
   getUsers() {
     return this.prisma.user.findMany({
@@ -40,14 +42,21 @@ export class UserService {
     });
   }
 
-  async editUser(
-    userId: number,
-    dto: EditUserDto,
-  ) {
+  async createUser(dto: RegisterAuthDto) {
+    try {
+      return await this.authService.createUser(
+        dto,
+      );
+    } catch (e) {
+      this.errorHandler(e);
+    }
+  }
+
+  async editUser(dto: UserDto) {
     try {
       const user = await this.prisma.user.update({
         where: {
-          id: userId,
+          id: dto.id,
         },
         data: {
           ...dto,
@@ -82,7 +91,7 @@ export class UserService {
       Prisma.PrismaClientKnownRequestError
     ) {
       if (error.code === 'P2002') {
-        if (info instanceof EditUserDto) {
+        if (info instanceof UserDto) {
           throw new HttpException(
             'Department name is already used',
             HttpStatus.FOUND,

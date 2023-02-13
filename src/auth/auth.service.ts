@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
@@ -18,6 +19,46 @@ export class AuthService {
   ) {}
 
   async signup(dto: RegisterAuthDto) {
+    console.log('-', dto);
+    // generate the password hash
+    const hash = await argon.hash(dto.password);
+    // save the new user in the db
+    delete dto.password;
+
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          ...dto,
+          hash,
+        },
+      });
+
+      return await this.signToken(
+        user.id,
+        user.email,
+      );
+    } catch (error) {
+      console.log(error);
+      if (
+        error instanceof
+        PrismaClientKnownRequestError
+      ) {
+        if (error.code === 'P2002') {
+          const errors = {
+            email: 'email or afm already exists',
+            afm: 'email or afm already exists',
+          };
+
+          throw new BadRequestException({
+            errors: { ...errors },
+          });
+        }
+      }
+      throw error;
+    }
+  }
+
+  async createUser(dto: RegisterAuthDto) {
     // generate the password hash
     const hash = await argon.hash(dto.password);
     // save the new user in the db
@@ -29,8 +70,9 @@ export class AuthService {
           hash,
         },
       });
+      delete user.hash;
 
-      return this.signToken(user.id, user.email);
+      return user;
     } catch (error) {
       if (
         error instanceof
@@ -81,6 +123,7 @@ export class AuthService {
       sub: userId,
       email,
     };
+
     const secret = this.config.get('JWT_SECRET');
 
     const token = await this.jwt.signAsync(
@@ -90,7 +133,7 @@ export class AuthService {
         secret: secret,
       },
     );
-
+    console.log('-', token);
     return {
       access_token: token,
     };
