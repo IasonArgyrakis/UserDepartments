@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import {
@@ -27,13 +31,32 @@ export class JwtStrategy extends PassportStrategy(
     sub: number;
     email: string;
   }) {
-    const user =
-      await this.prisma.user.findUnique({
-        where: {
-          id: payload.sub,
+    try {
+      const user =
+        await this.prisma.user.findUnique({
+          where: {
+            id: payload.sub,
+          },
+        });
+      delete user.hash;
+      return user;
+    } catch (error) {
+      console.log(error);
+      const error_obj = error.meta.target.reduce(
+        (accumulator, value) => {
+          return {
+            ...accumulator,
+            [value]: 'already used',
+          };
         },
-      });
-    delete user.hash;
-    return user;
+        {},
+      );
+      if (error.code === 'P2002') {
+        throw new HttpException(
+          { errors: error_obj },
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    }
   }
 }

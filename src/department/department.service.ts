@@ -34,10 +34,7 @@ export class DepartmentService {
         });
       return department;
     } catch (e) {
-      this.errorHandler(
-        e,
-        new CreateDepartmentDto(),
-      );
+      this.errorHandler(e);
     }
   }
 
@@ -81,20 +78,14 @@ export class DepartmentService {
     try {
       const department =
         await this.getDepartmentById(id);
-      if (department !== null) {
-        const users = department.users.map(
-          this.serializeUser,
-        );
-        return {
-          ...department,
-          users: users,
-        };
-      } else {
-        return new HttpException(
-          `Not Found `,
-          HttpStatus.NOT_FOUND,
-        );
-      }
+
+      const users = department.users.map(
+        this.serializeUser,
+      );
+      return {
+        ...department,
+        users: users,
+      };
     } catch (e) {
       return this.errorHandler(e);
     }
@@ -142,30 +133,14 @@ export class DepartmentService {
     }
   }
 
-  //
-  // async removeUserFromDepartment(
-  //   departmentId: number,
-  //   userId: number,
-  // ) {
-  //   return this.prisma.department.update({
-  //     where: {
-  //       id: departmentId,
-  //     },
-  //     data: {
-  //       users: { connect: { id: userId } },
-  //     },
-  //   });
-  // }
-
   async editDepartmentById(
-    departmentId: number,
     dto: UpdateDepartmentDto,
   ) {
     try {
       const department =
         await this.prisma.department.update({
           where: {
-            id: departmentId,
+            id: dto.id,
           },
           data: {
             ...dto,
@@ -173,10 +148,7 @@ export class DepartmentService {
         });
       return department;
     } catch (e) {
-      return this.errorHandler(
-        e,
-        new UpdateDepartmentDto(),
-      );
+      return this.errorHandler(e);
     }
   }
 
@@ -197,42 +169,33 @@ export class DepartmentService {
     }
   }
 
-  errorHandler(error, info = null) {
-    if (
-      error instanceof
-      Prisma.PrismaClientKnownRequestError
-    ) {
-      console.log(error);
-      if (error.code === 'P2002') {
-        if (info instanceof UpdateDepartmentDto) {
-          throw new HttpException(
-            'Department name is already used',
-            HttpStatus.FOUND,
-          );
-        }
-        if (info instanceof CreateDepartmentDto) {
-          throw new HttpException(
-            'Department name is already used',
-            HttpStatus.FOUND,
-          );
-        }
-        throw new HttpException(
-          'Already exists (Duplicate)',
-          HttpStatus.FOUND,
-        );
-      }
-      if (error.code === 'P2003') {
-        throw new HttpException(
-          `Wrong Data Combination `,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      if (error.code === 'P2025') {
-        throw new HttpException(
-          `Not Found`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
+  errorHandler(error) {
+    const obj = error.meta.target.reduce(
+      (accumulator, value) => {
+        return {
+          ...accumulator,
+          [value]: 'already used',
+        };
+      },
+      {},
+    );
+    if (error.code === 'P2003') {
+      throw new HttpException(
+        { error: obj },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (error.code === 'P2025') {
+      throw new HttpException(
+        { error: obj },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    if (error.code === 'P2002') {
+      throw new HttpException(
+        { errors: obj },
+        HttpStatus.FOUND,
+      );
     }
     return error;
   }

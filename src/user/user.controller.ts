@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
@@ -25,8 +26,8 @@ export class UserController {
   }
 
   @Get()
-  findAll() {
-    return this.userService.getUsers();
+  async findAll() {
+    return this.userService.serializedUsers();
   }
 
   @Get(':id')
@@ -42,7 +43,7 @@ export class UserController {
     return this.userService.createUser(dto);
   }
 
-  @Patch()
+  @Put()
   editUser(@Body() dto: UserDto) {
     return this.userService.editUser(dto);
   }

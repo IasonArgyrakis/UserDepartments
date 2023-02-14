@@ -51,15 +51,12 @@ export class DepartmentController {
     );
   }
 
-  @Put(':id')
+  @Put()
   update(
-    @Param('id', ParseIntPipe)
-    id: number,
     @Body()
     updateDepartmentDto: UpdateDepartmentDto,
   ) {
     return this.departmentService.editDepartmentById(
-      id,
       updateDepartmentDto,
     );
   }
@@ -91,10 +88,10 @@ export class DepartmentController {
   @Delete(':id')
   remove(
     @Param('id', ParseIntPipe)
-    departmentId: number,
+    id: number,
   ) {
     return this.departmentService.deleteDepartmentById(
-      departmentId,
+      id,
     );
   }
 }

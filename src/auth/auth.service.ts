@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
@@ -19,7 +21,6 @@ export class AuthService {
   ) {}
 
   async signup(dto: RegisterAuthDto) {
-    console.log('-', dto);
     // generate the password hash
     const hash = await argon.hash(dto.password);
     // save the new user in the db
@@ -38,23 +39,22 @@ export class AuthService {
         user.email,
       );
     } catch (error) {
-      console.log(error);
-      if (
-        error instanceof
-        PrismaClientKnownRequestError
-      ) {
-        if (error.code === 'P2002') {
-          const errors = {
-            email: 'email or afm already exists',
-            afm: 'email or afm already exists',
+      const error_obj = error.meta.target.reduce(
+        (accumulator, value) => {
+          return {
+            ...accumulator,
+            [value]: 'already used',
           };
-
-          throw new BadRequestException({
-            errors: { ...errors },
-          });
-        }
+        },
+        {},
+      );
+      if (error.code === 'P2002') {
+        throw new HttpException(
+          { errors: error_obj },
+          HttpStatus.FOUND,
+        );
       }
-      throw error;
+      throw new BadRequestException();
     }
   }
 
@@ -96,11 +96,12 @@ export class AuthService {
           email: dto.email,
         },
       });
+
     // if user does not exist throw exception
     if (!user)
-      throw new ForbiddenException(
-        'Credentials incorrect',
-      );
+      throw new ForbiddenException({
+        email: 'No Such User',
+      });
 
     // compare password
     const pwMatches = await argon.verify(
@@ -109,12 +110,13 @@ export class AuthService {
     );
     // if password incorrect throw exception
     if (!pwMatches)
-      throw new ForbiddenException(
-        'Credentials incorrect',
-      );
+      throw new ForbiddenException({
+        password: 'Credentials incorrect',
+      });
     return this.signToken(user.id, user.email);
   }
 
+  async;
   async signToken(
     userId: number,
     email: string,
@@ -129,11 +131,10 @@ export class AuthService {
     const token = await this.jwt.signAsync(
       payload,
       {
-        expiresIn: '15m',
+        expiresIn: '1d',
         secret: secret,
       },
     );
-    console.log('-', token);
     return {
       access_token: token,
     };

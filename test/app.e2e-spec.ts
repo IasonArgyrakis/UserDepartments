@@ -213,9 +213,9 @@ describe('App e2e', () => {
     it('add exising email should fail', () => {
       return pactum
         .spec()
-        .patch('/users/{id}')
-        .withPathParams('id', 2)
+        .patch('/users')
         .withBody({
+          id: 2,
           email: user_1.email,
         })
         .withHeaders({
@@ -227,9 +227,9 @@ describe('App e2e', () => {
     it('add exising afm should fail', () => {
       return pactum
         .spec()
-        .patch('/users/{id}')
-        .withPathParams('id', 2)
+        .patch('/users')
         .withBody({
+          id: 2,
           afm: user_1.afm,
         })
         .withHeaders({
@@ -249,7 +249,8 @@ describe('App e2e', () => {
           firstName: user_2.firstName,
           afm: 'other afm',
         })
-        .expectStatus(403);
+        .inspect()
+        .expectStatus(400);
     });
     it('Registering new user with existing afm should fail', () => {
       return pactum
@@ -262,7 +263,7 @@ describe('App e2e', () => {
           firstName: user_2.firstName,
           afm: user_2.afm,
         })
-        .expectStatus(403);
+        .expectStatus(400);
     });
   });
 

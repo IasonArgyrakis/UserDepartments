@@ -25,7 +25,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([email, afm])
+  @@unique([email, afm,firstName,lastName])
 
   @@map("users")
 }

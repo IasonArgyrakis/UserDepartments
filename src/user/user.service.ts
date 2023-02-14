@@ -17,7 +17,7 @@ export class UserService {
     private authService: AuthService,
   ) {}
 
-  getUsers() {
+  async getUsers() {
     return this.prisma.user.findMany({
       select: {
         id: true,
@@ -27,19 +27,38 @@ export class UserService {
         email: true,
         createdAt: true,
         updatedAt: true,
-
         departments: {
           select: {
             department: {
-              select: { title: true },
+              select: { id: true, title: true },
             },
           },
         },
+      },
+      orderBy: {
+        id: 'asc',
       },
       // @todo Paginate
       // skip: 4,
       // take: 2,
     });
+  }
+  async serializedUsers() {
+    try {
+      const users: Array<any> =
+        await this.getUsers();
+      return users.map((user) => {
+        user.departments = user.departments.map(
+          (department) => {
+            department = department.department;
+            return department;
+          },
+        );
+        return user;
+      });
+    } catch (e) {
+      this.errorHandler(e);
+    }
   }
 
   async createUser(dto: RegisterAuthDto) {
@@ -66,8 +85,8 @@ export class UserService {
       delete user.hash;
 
       return user;
-    } catch (e) {
-      this.errorHandler(e);
+    } catch (error) {
+      this.errorHandler(error);
     }
   }
 
@@ -85,41 +104,33 @@ export class UserService {
     return user;
   }
 
-  errorHandler(error, info = null) {
-    if (
-      error instanceof
-      Prisma.PrismaClientKnownRequestError
-    ) {
-      if (error.code === 'P2002') {
-        if (info instanceof UserDto) {
-          throw new HttpException(
-            'Department name is already used',
-            HttpStatus.FOUND,
-          );
-        }
-        if (info instanceof CreateDepartmentDto) {
-          throw new HttpException(
-            'Department name is already used',
-            HttpStatus.FOUND,
-          );
-        }
-        throw new HttpException(
-          'Already exists (Duplicate)',
-          HttpStatus.FOUND,
-        );
-      }
-      if (error.code === 'P2003') {
-        throw new HttpException(
-          `Wrong Data Combination `,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      if (error.code === 'P2025') {
-        throw new HttpException(
-          `Not Found`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
+  errorHandler(error) {
+    const obj = error.meta.target.reduce(
+      (accumulator, value) => {
+        return {
+          ...accumulator,
+          [value]: 'already used',
+        };
+      },
+      {},
+    );
+    if (error.code === 'P2003') {
+      throw new HttpException(
+        `Wrong Data Combination `,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (error.code === 'P2025') {
+      throw new HttpException(
+        `Not Found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    if (error.code === 'P2002') {
+      throw new HttpException(
+        { errors: obj },
+        HttpStatus.FOUND,
+      );
     }
     return error;
   }
