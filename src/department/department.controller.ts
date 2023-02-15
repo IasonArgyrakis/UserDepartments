@@ -20,7 +20,7 @@ import {
   UpdateDepartmentDto,
 } from './dto';
 
-//@UseGuards(JwtGuard)
+@UseGuards(JwtGuard)
 @Controller('departments')
 export class DepartmentController {
   constructor(

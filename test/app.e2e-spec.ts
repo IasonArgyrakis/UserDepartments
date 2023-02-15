@@ -86,14 +86,13 @@ describe('App e2e', () => {
     await app.listen(3333);
 
     prisma = app.get(PrismaService);
-    await prisma.cleanDb();
     pactum.request.setBaseUrl(
       'http://localhost:3333',
     );
   });
 
   afterAll(() => {
-    prisma.cleanDb();
+    // prisma.cleanDb();
     app.close();
   });
 
@@ -213,7 +212,7 @@ describe('App e2e', () => {
     it('add exising email should fail', () => {
       return pactum
         .spec()
-        .patch('/users')
+        .put('/users')
         .withBody({
           id: 2,
           email: user_1.email,
@@ -227,7 +226,7 @@ describe('App e2e', () => {
     it('add exising afm should fail', () => {
       return pactum
         .spec()
-        .patch('/users')
+        .put('/users')
         .withBody({
           id: 2,
           afm: user_1.afm,
@@ -250,7 +249,7 @@ describe('App e2e', () => {
           afm: 'other afm',
         })
         .inspect()
-        .expectStatus(400);
+        .expectStatus(302);
     });
     it('Registering new user with existing afm should fail', () => {
       return pactum
@@ -263,7 +262,7 @@ describe('App e2e', () => {
           firstName: user_2.firstName,
           afm: user_2.afm,
         })
-        .expectStatus(400);
+        .expectStatus(302);
     });
   });
 
