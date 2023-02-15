@@ -120,9 +120,13 @@ export class UserService {
   }
 
   errorHandler(error) {
-    console.log(error.meta);
-    if (error.meta) {
-      const obj = error.meta.target.reduce(
+    console.log(error);
+    const errorMsg = {
+      errors: undefined,
+      cause: undefined,
+    };
+    if (error.meta.target) {
+      errorMsg.errors = error.meta.target.reduce(
         (accumulator, value) => {
           return {
             ...accumulator,
@@ -131,26 +135,28 @@ export class UserService {
         },
         {},
       );
-
-      if (error.code === 'P2003') {
-        throw new HttpException(
-          `Wrong Data Combination `,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      if (error.code === 'P2025') {
-        throw new HttpException(
-          `Not Found`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      if (error.code === 'P2002') {
-        throw new HttpException(
-          { errors: obj },
-          HttpStatus.FOUND,
-        );
-      }
     }
-    throw error;
+    if (error.meta.cause) {
+      errorMsg.cause = error.meta.cause;
+    }
+
+    if (error.code === 'P2003') {
+      throw new HttpException(
+        { ...errorMsg },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (error.code === 'P2025') {
+      throw new HttpException(
+        { ...errorMsg },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    if (error.code === 'P2002') {
+      throw new HttpException(
+        { ...errorMsg },
+        HttpStatus.FOUND,
+      );
+    }
   }
 }
