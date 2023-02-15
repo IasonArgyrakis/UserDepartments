@@ -125,7 +125,7 @@ export class UserService {
       errors: undefined,
       cause: undefined,
     };
-    if (error.meta.target) {
+    if (error.meta?.target) {
       errorMsg.errors = error.meta.target.reduce(
         (accumulator, value) => {
           return {
@@ -136,7 +136,7 @@ export class UserService {
         {},
       );
     }
-    if (error.meta.cause) {
+    if (error.meta?.cause) {
       errorMsg.cause = error.meta.cause;
     }
 
