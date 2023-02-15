@@ -1,5 +1,4 @@
 import {
-  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -9,8 +8,6 @@ import {
   CreateDepartmentDto,
   UpdateDepartmentDto,
 } from './dto';
-
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class DepartmentService {
@@ -78,14 +75,16 @@ export class DepartmentService {
     try {
       const department =
         await this.getDepartmentById(id);
+      console.log(department);
 
-      const users = department.users.map(
-        this.serializeUser,
-      );
-      return {
-        ...department,
-        users: users,
-      };
+      // const users = department.users.map(
+      //   this.serializeUser,
+      // );
+      // return {
+      //   ...department,
+      //   users: users,
+      // };
+      return department;
     } catch (e) {
       return this.errorHandler(e);
     }
@@ -118,16 +117,16 @@ export class DepartmentService {
     userId: number,
   ) {
     try {
-      const department =
-        await this.prisma.userDepartment.delete({
+      return await this.prisma.userDepartment.delete(
+        {
           where: {
             userId_departmentId: {
               departmentId: departmentId,
               userId: userId,
             },
           },
-        });
-      return department;
+        },
+      );
     } catch (e) {
       return this.errorHandler(e);
     }
@@ -162,6 +161,14 @@ export class DepartmentService {
           where: {
             id: departmentId,
           },
+          include: {
+            users: {
+              select: {
+                departmentId: true,
+                userId: true,
+              },
+            },
+          },
         });
       return department;
     } catch (e) {
@@ -170,33 +177,43 @@ export class DepartmentService {
   }
 
   errorHandler(error) {
-    const obj = error.meta.target.reduce(
-      (accumulator, value) => {
-        return {
-          ...accumulator,
-          [value]: 'already used',
-        };
-      },
-      {},
-    );
+    console.log(error);
+    const errorMsg = {
+      errors: undefined,
+      cause: undefined,
+    };
+    if (error.meta.target) {
+      errorMsg.errors = error.meta.target.reduce(
+        (accumulator, value) => {
+          return {
+            ...accumulator,
+            [value]: 'already used',
+          };
+        },
+        {},
+      );
+    }
+    if (error.meta.cause) {
+      errorMsg.cause = error.meta.cause;
+    }
+
     if (error.code === 'P2003') {
       throw new HttpException(
-        { error: obj },
+        { ...errorMsg },
         HttpStatus.BAD_REQUEST,
       );
     }
     if (error.code === 'P2025') {
       throw new HttpException(
-        { error: obj },
+        { ...errorMsg },
         HttpStatus.NOT_FOUND,
       );
     }
     if (error.code === 'P2002') {
       throw new HttpException(
-        { errors: obj },
+        { ...errorMsg },
         HttpStatus.FOUND,
       );
     }
-    return error;
   }
 }

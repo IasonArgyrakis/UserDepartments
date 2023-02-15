@@ -67,6 +67,8 @@ export class UserService {
         dto,
       );
     } catch (e) {
+      console.log(e);
+
       this.errorHandler(e);
     }
   }
@@ -89,6 +91,19 @@ export class UserService {
       this.errorHandler(error);
     }
   }
+  async deleteUser(dto: UserDto) {
+    try {
+      const user = await this.prisma.user.delete({
+        where: {
+          id: dto.id,
+        },
+      });
+
+      return user;
+    } catch (error) {
+      this.errorHandler(error);
+    }
+  }
 
   async findUser(userId: number) {
     const user = await this.prisma.user.findFirst(
@@ -105,33 +120,37 @@ export class UserService {
   }
 
   errorHandler(error) {
-    const obj = error.meta.target.reduce(
-      (accumulator, value) => {
-        return {
-          ...accumulator,
-          [value]: 'already used',
-        };
-      },
-      {},
-    );
-    if (error.code === 'P2003') {
-      throw new HttpException(
-        `Wrong Data Combination `,
-        HttpStatus.BAD_REQUEST,
+    console.log(error.meta);
+    if (error.meta) {
+      const obj = error.meta.target.reduce(
+        (accumulator, value) => {
+          return {
+            ...accumulator,
+            [value]: 'already used',
+          };
+        },
+        {},
       );
+
+      if (error.code === 'P2003') {
+        throw new HttpException(
+          `Wrong Data Combination `,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (error.code === 'P2025') {
+        throw new HttpException(
+          `Not Found`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (error.code === 'P2002') {
+        throw new HttpException(
+          { errors: obj },
+          HttpStatus.FOUND,
+        );
+      }
     }
-    if (error.code === 'P2025') {
-      throw new HttpException(
-        `Not Found`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    if (error.code === 'P2002') {
-      throw new HttpException(
-        { errors: obj },
-        HttpStatus.FOUND,
-      );
-    }
-    return error;
+    throw error;
   }
 }

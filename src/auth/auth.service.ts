@@ -39,22 +39,7 @@ export class AuthService {
         user.email,
       );
     } catch (error) {
-      const error_obj = error.meta.target.reduce(
-        (accumulator, value) => {
-          return {
-            ...accumulator,
-            [value]: 'already used',
-          };
-        },
-        {},
-      );
-      if (error.code === 'P2002') {
-        throw new HttpException(
-          { errors: error_obj },
-          HttpStatus.FOUND,
-        );
-      }
-      throw new BadRequestException();
+      this.errorHandler(error);
     }
   }
 
@@ -74,17 +59,7 @@ export class AuthService {
 
       return user;
     } catch (error) {
-      if (
-        error instanceof
-        PrismaClientKnownRequestError
-      ) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException(
-            'Credentials taken',
-          );
-        }
-      }
-      throw error;
+      this.errorHandler(error);
     }
   }
 
@@ -138,5 +113,46 @@ export class AuthService {
     return {
       access_token: token,
     };
+  }
+
+  errorHandler(error) {
+    console.log(error);
+    const errorMsg = {
+      errors: undefined,
+      cause: undefined,
+    };
+    if (error.meta.target) {
+      errorMsg.errors = error.meta.target.reduce(
+        (accumulator, value) => {
+          return {
+            ...accumulator,
+            [value]: 'already used',
+          };
+        },
+        {},
+      );
+    }
+    if (error.meta.cause) {
+      errorMsg.cause = error.meta.cause;
+    }
+
+    if (error.code === 'P2003') {
+      throw new HttpException(
+        { ...errorMsg },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (error.code === 'P2025') {
+      throw new HttpException(
+        { ...errorMsg },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    if (error.code === 'P2002') {
+      throw new HttpException(
+        { ...errorMsg },
+        HttpStatus.FOUND,
+      );
+    }
   }
 }
