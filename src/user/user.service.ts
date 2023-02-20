@@ -158,5 +158,6 @@ export class UserService {
         HttpStatus.FOUND,
       );
     }
+    throw error;
   }
 }

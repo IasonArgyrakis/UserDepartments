@@ -215,5 +215,6 @@ export class DepartmentService {
         HttpStatus.FOUND,
       );
     }
+    throw error;
   }
 }
