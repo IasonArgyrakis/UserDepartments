@@ -142,7 +142,7 @@ export class DepartmentService {
             id: dto.id,
           },
           data: {
-            ...dto,
+            title: dto.title,
           },
         });
       return department;
